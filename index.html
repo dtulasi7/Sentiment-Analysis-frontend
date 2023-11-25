@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analyzer</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <!-- <a class="navbar-brand" href="#">Sentiment Analyzer</a> -->
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#" id="sentiment-analyzer-link">Sentiment Analyzer</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="compare-models-link">Compare Models</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Content Area -->
+    <div class="container mt-3">
+        <!-- Form for adding comments -->
+        <form id="commentForm">
+            <div class="form-group">
+                <label for="comment">Enter Comment:</label>
+                <input type="text" class="form-control" id="comment" placeholder="Type your comment here">
+            </div>
+            <button type="button" class="btn btn-primary" onclick="checkSentiment()">Check Sentiment</button>
+        </form>
+
+        <!-- Display sentiment response -->
+        <div id="sentimentResponse" class="mt-3">
+            <!-- The sentiment response will be displayed here -->
+        </div>
+
+        <!-- Display comparison response -->
+        <div id="comparisonResponse" class="mt-3" style="display: none;">
+            <!-- The comparison response will be displayed here -->
+            <div class="row">
+                <div class="col-md-6">
+                    <strong>Naive Bayes Metrics:</strong><br>
+                    Accuracy: <span id="nbAccuracy"></span><br>
+                    Precision: <span id="nbPrecision"></span><br>
+                    Recall: <span id="nbRecall"></span><br>
+                    F1-score: <span id="nbF1Score"></span><br>
+                </div>
+                <div class="col-md-6">
+                    <strong>Logistic Regression Metrics:</strong><br>
+                    Accuracy: <span id="lrAccuracy"></span><br>
+                    Precision: <span id="lrPrecision"></span><br>
+                    Recall: <span id="lrRecall"></span><br>
+                    F1-score: <span id="lrF1Score"></span><br>
+                </div>
+            </div>
+        </div>
+
+        <!-- Placeholder for JavaScript Code -->
+        <script>
+            function checkSentiment() {
+                // Get the comment from the input field
+                var comment = document.getElementById('comment').value;
+
+                // Make sure the comment is not empty
+                if (comment.trim() === "") {
+                    alert("Please enter a comment before checking sentiment.");
+                    return;
+                }
+
+                // Hit the API endpoint to check sentiment
+                var sentimentApiUrl = "https://sentiment-analysis-z9l8.onrender.com/get-comment-sentiment?comment=" + encodeURIComponent(comment);
+
+                // Use fetch to make the GET request
+                fetch(sentimentApiUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Display the sentiment response
+                        displaySentimentResponse(data.message);
+
+                        // Check if the "Compare Models" link was clicked
+                        if (compareModelsClicked) {
+                            // Hit the API endpoint to compare models
+                            var compareModelsApiUrl = "https://sentiment-analysis-z9l8.onrender.com/nb-lr-comparision-for-amazon-reviews";
+
+                            // Use fetch to make the GET request
+                            fetch(compareModelsApiUrl)
+                                .then(response => response.json())
+                                .then(compareData => {
+                                    // Display the comparison response
+                                    displayComparisonResponse(compareData);
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    alert('Error comparing models. Please try again.');
+                                });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error checking sentiment. Please try again.');
+                    });
+            }
+
+            function displaySentimentResponse(sentiment) {
+                // Display the sentiment response in the designated div
+                var sentimentResponseDiv = document.getElementById('sentimentResponse');
+                sentimentResponseDiv.innerHTML = '<strong>Sentiment:</strong> ' + sentiment;
+            }
+
+            function displayComparisonResponse(compareData) {
+                // Display the comparison response in the designated div
+                var nbAccuracy = document.getElementById('nbAccuracy');
+                var nbPrecision = document.getElementById('nbPrecision');
+                var nbRecall = document.getElementById('nbRecall');
+                var nbF1Score = document.getElementById('nbF1Score');
+
+                var lrAccuracy = document.getElementById('lrAccuracy');
+                var lrPrecision = document.getElementById('lrPrecision');
+                var lrRecall = document.getElementById('lrRecall');
+                var lrF1Score = document.getElementById('lrF1Score');
+
+                // Update values for Naive Bayes
+                nbAccuracy.textContent = compareData["Naive Bayes Metrics"].Accuracy;
+                nbPrecision.textContent = compareData["Naive Bayes Metrics"].Precision;
+                nbRecall.textContent = compareData["Naive Bayes Metrics"].Recall;
+                nbF1Score.textContent = compareData["Naive Bayes Metrics"]["F1-score"];
+
+                // Update values for Logistic Regression
+                lrAccuracy.textContent = compareData["Logistic Regression Metrics"].Accuracy;
+                lrPrecision.textContent = compareData["Logistic Regression Metrics"].Precision;
+                lrRecall.textContent = compareData["Logistic Regression Metrics"].Recall;
+                lrF1Score.textContent = compareData["Logistic Regression Metrics"]["F1-score"];
+
+                // Show the comparison response
+                document.getElementById('comparisonResponse').style.display = 'block';
+            }
+
+            document.getElementById('sentiment-analyzer-link').addEventListener('click', function () {
+                // Code to handle sentiment analyzer link click
+                alert('Sentiment Analyzer Clicked');
+            });
+
+            var compareModelsClicked = false; // Flag to check if "Compare Models" link was clicked
+
+            document.getElementById('compare-models-link').addEventListener('click', function () {
+                // Code to handle compare models link
+                alert('Compare Models Clicked');
+                compareModelsClicked = true; // Set the flag to true
+            });
+        </script>
+
+    </div>
+
+    <!-- Bootstrap JS, Popper.js, and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>
